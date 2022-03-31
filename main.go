@@ -58,7 +58,7 @@ func main() {
 		alertRules: rules,
 	}
 
-	ticker := time.NewTicker(time.Second * 15)
+	ticker := time.NewTicker(time.Second * time.Duration(config.CheckInterval))
 	go func() {
 		for range ticker.C {
 			as.scanServices()

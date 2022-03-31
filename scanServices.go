@@ -22,10 +22,12 @@ func (a *alertServer) scanServices() {
 	}
 
 	serviceInstances, _ := a.cfClient.ListV3ServiceInstances()
+	log.Printf("Processing %v instances\n", len(serviceInstances))
+
 	for _, serviceInstance := range serviceInstances {
 		n, _ := ring.Locate(serviceInstance.Guid)
 		if n == a.node {
-			log.Println("processing servive guid: ", serviceInstance.Guid)
+			//log.Println("processing servive guid: ", serviceInstance.Guid)
 
 			if serviceInstance.Relationships["service_plan"].Data.GUID == "" {
 				//this is probably a CUPS, skip it.
@@ -42,6 +44,7 @@ func (a *alertServer) scanServices() {
 			}
 
 			if rule, ok := a.alertRules[service.Label]; ok {
+				log.Printf("Checking %v service with guid: %v\n", service.Label, serviceInstance.Guid)
 				vres, err := a.GetMetric(rule.Promq, serviceInstance.Guid)
 				if err != nil {
 					log.Println(err)
@@ -50,7 +53,8 @@ func (a *alertServer) scanServices() {
 
 				for _, sample := range vres {
 					fmt.Println("Value: ", sample.Value)
-					fmt.Printf("Metric: %+v\n", sample.Metric["__name__"])
+					fmt.Printf("Metric name: %+v\n", sample.Metric["__name__"])
+					fmt.Printf("Metric: %+v\n", sample.Metric)
 
 					exceeded, err := rule.TresholdExceeded(*sample)
 					if err != nil {

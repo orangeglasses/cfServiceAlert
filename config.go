@@ -16,14 +16,6 @@ type alertServiceConfig struct {
 	CheckInterval int    `envconfig:"check_interval" default:"60"`
 }
 
-type alertRule struct {
-	Promq    string `json:"prometheus_query"`
-	Treshold string `json:"treshold"`
-	Above    bool   `json:"above"`
-}
-
-type alertRules map[string]alertRule
-
 func alertServiceConfigLoad() (alertServiceConfig, alertRules, error) {
 	var config alertServiceConfig
 	rules := make(alertRules)

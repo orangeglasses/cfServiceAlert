@@ -4,13 +4,21 @@ import (
 	"bytes"
 	"fmt"
 	"log"
-	"strconv"
 	"text/template"
 
 	"github.com/cloudfoundry-community/go-cfclient"
 	"github.com/prometheus/common/model"
 	"github.com/vedhavyas/hashring"
 )
+
+type alertServer struct {
+	cfClient   *cfclient.Client
+	promClient *PrometheusClient
+	appGuid    string
+	node       string
+	nodes      int
+	alertRules alertRules
+}
 
 func (a *alertServer) scanServices() {
 	app, _ := a.cfClient.GetAppByGuid(a.appGuid)
@@ -43,32 +51,9 @@ func (a *alertServer) scanServices() {
 				log.Println("Error getting Service: ", err)
 			}
 
-			if rule, ok := a.alertRules[service.Label]; ok {
+			if ruleSet, ok := a.alertRules[service.Label]; ok {
 				log.Printf("Checking %v service with guid: %v\n", service.Label, serviceInstance.Guid)
-				vres, err := a.GetMetric(rule.Promq, serviceInstance.Guid)
-				if err != nil {
-					log.Println(err)
-					continue
-				}
-
-				for _, sample := range vres {
-					fmt.Println("Value: ", sample.Value)
-					fmt.Printf("Metric name: %+v\n", sample.Metric["__name__"])
-					fmt.Printf("Metric: %+v\n", sample.Metric)
-
-					exceeded, err := rule.TresholdExceeded(*sample)
-					if err != nil {
-						log.Println("Error checking treshold: ", err)
-						continue
-					}
-
-					if exceeded {
-						err := rule.SendNotificationForSpace(*a.cfClient, serviceInstance, fmt.Sprintf("%v", sample.Metric["__name__"]))
-						if err != nil {
-							log.Println("Error sending alert: ", err)
-						}
-					}
-				}
+				ruleSet.Process(a, serviceInstance)
 			}
 		}
 	}
@@ -95,36 +80,4 @@ func (a *alertServer) GetMetric(queryTemplate, instanceId string) (model.Vector,
 	}
 
 	return res.(model.Vector), nil
-}
-
-func (rule *alertRule) TresholdExceeded(sample model.Sample) (bool, error) {
-	treshold, err := strconv.Atoi(rule.Treshold)
-	if err != nil {
-		return false, err
-	}
-
-	if rule.Above {
-		if int(sample.Value) > treshold {
-			//log.Println("treshold exceeded (higher)")
-			return true, nil
-		}
-	} else {
-		if int(sample.Value) < treshold {
-			//log.Println("treshold exceeded (lower)")
-			return true, nil
-		}
-	}
-
-	return false, nil
-}
-
-func (rule *alertRule) SendNotificationForSpace(client cfclient.Client, service cfclient.V3ServiceInstance, metric string) error {
-	space, err := client.GetSpaceByGuid(service.Relationships["space"].Data.GUID)
-	if err != nil {
-		return err
-	}
-
-	log.Printf("Generating notification for service %s, metric: %s, space: %s(%s)\n", service.Name, metric, space.Name, space.Guid)
-
-	return nil
 }

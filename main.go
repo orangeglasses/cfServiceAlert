@@ -11,15 +11,6 @@ import (
 	"github.com/cloudfoundry-community/go-cfenv"
 )
 
-type alertServer struct {
-	cfClient   *cfclient.Client
-	promClient *PrometheusClient
-	appGuid    string
-	node       string
-	nodes      int
-	alertRules alertRules
-}
-
 func (a *alertServer) statusHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "I am Node %v of %v", a.node, a.nodes)
 }

@@ -1,7 +1,9 @@
 {
-    "redis": {
+    "redis": [ {
+        "name": "Redis Disk Usage",
         "prometheus_query": "max by (__name__, bosh_job_index) (bosh_job_persistent_disk_percent{bosh_deployment=\"cf\", bosh_job_name=\"database\"})",
         "treshold": "20",
-        "above": true
-    }
+        "above": true,
+        "message": "Your Redis service instance with name {{.InstanceName}} in Cloudfoundry org/space: {{.OrgName}}/{{.SpaceName}} is running out of disk space."
+    } ]
 }

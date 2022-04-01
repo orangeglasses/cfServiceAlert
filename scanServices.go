@@ -82,8 +82,7 @@ func (a *alertServer) GetMetric(queryTemplate, instanceId string) (model.Vector,
 
 	t, err := template.New("pq").Parse(queryTemplate)
 	if err := t.Execute(&renderedQuery, templData); err != nil {
-		log.Printf("Error rendering prometheus query: %v", err)
-
+		return nil, fmt.Errorf("Error rendering prometheus query: %v", err)
 	}
 
 	res, err := a.promClient.Query(renderedQuery.String())

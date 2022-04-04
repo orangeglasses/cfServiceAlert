@@ -5,19 +5,14 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/cloudfoundry-community/go-cfclient"
 	"github.com/cloudfoundry-community/go-cfenv"
 )
 
-func (a *alertServer) statusHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "I am Node %v of %v", a.node, a.nodes)
-}
-
 func main() {
 	appEnv, _ := cfenv.Current()
-	config, rules, err := alertServiceConfigLoad()
+	config, rules, err := alertServerConfigLoad()
 	if err != nil {
 		log.Fatalf("Error loading config: %v", err.Error())
 	}
@@ -27,8 +22,6 @@ func main() {
 		Username:   config.CFUser,
 		Password:   config.CFPassword,
 	}
-
-	fmt.Printf("%+v", c)
 
 	cfClient, err := cfclient.NewClient(c)
 	if err != nil {
@@ -45,16 +38,10 @@ func main() {
 		promClient: promClient,
 		appGuid:    appEnv.AppID,
 		node:       strconv.Itoa(appEnv.Index),
-		nodes:      0,
 		alertRules: rules,
 	}
 
-	ticker := time.NewTicker(time.Second * time.Duration(config.CheckInterval))
-	go func() {
-		for range ticker.C {
-			as.scanServices()
-		}
-	}()
+	as.Start(int64(config.CheckInterval))
 
 	http.HandleFunc("/status", as.statusHandler)
 	http.ListenAndServe(fmt.Sprintf(":%v", appEnv.Port), nil)

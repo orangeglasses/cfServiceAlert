@@ -41,7 +41,7 @@ func (rs alertRuleSet) Process(a *alertServer, serviceInstance cfclient.V3Servic
 			}
 
 			if exceeded {
-				err := rule.SendNotificationForSpace(*a.cfClient, serviceInstance)
+				err := rule.SendNotificationForSpace(*a.cfClient, serviceInstance, sample.Value)
 				if err != nil {
 					log.Println("Error sending alert: ", err)
 				}
@@ -71,7 +71,7 @@ func (rule *alertRule) TresholdExceeded(sample model.Sample) (bool, error) {
 	return false, nil
 }
 
-func (rule *alertRule) SendNotificationForSpace(client cfclient.Client, serviceInstance cfclient.V3ServiceInstance) error {
+func (rule *alertRule) SendNotificationForSpace(client cfclient.Client, serviceInstance cfclient.V3ServiceInstance, sampleValue model.SampleValue) error {
 	space, err := client.GetSpaceByGuid(serviceInstance.Relationships["space"].Data.GUID)
 	if err != nil {
 		return err
@@ -84,15 +84,21 @@ func (rule *alertRule) SendNotificationForSpace(client cfclient.Client, serviceI
 
 	var renderedMessage bytes.Buffer
 	templData := struct {
+		AlertName    string
 		InstanceId   string
 		InstanceName string
 		SpaceName    string
 		OrgName      string
+		Treshold     string
+		MetricValue  model.SampleValue
 	}{
+		AlertName:    rule.Name,
 		InstanceId:   serviceInstance.Guid,
 		InstanceName: serviceInstance.Name,
 		SpaceName:    space.Name,
 		OrgName:      org.Name,
+		Treshold:     rule.Treshold,
+		MetricValue:  sampleValue,
 	}
 
 	t, err := template.New("msg").Parse(rule.Message)
@@ -100,6 +106,7 @@ func (rule *alertRule) SendNotificationForSpace(client cfclient.Client, serviceI
 		return fmt.Errorf("Error rendering message: %v", err)
 	}
 
+	//TODO: Check if we anoyed the user with an alert before.
 	log.Printf("Generating notification for service %s in space: %s(%s)\n", serviceInstance.Name, space.Name, space.Guid)
 	log.Println(renderedMessage.String())
 

@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"net/http"
 	"text/template"
+	"time"
 
 	"github.com/cloudfoundry-community/go-cfclient"
 	"github.com/prometheus/common/model"
@@ -18,6 +20,19 @@ type alertServer struct {
 	node       string
 	nodes      int
 	alertRules alertRules
+}
+
+func (a *alertServer) Start(checkInterval int64) {
+	ticker := time.NewTicker(time.Second * time.Duration(checkInterval))
+	go func() {
+		for range ticker.C {
+			a.scanServices()
+		}
+	}()
+}
+
+func (a *alertServer) statusHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "I am Node %v of %v", a.node, a.nodes)
 }
 
 func (a *alertServer) scanServices() {

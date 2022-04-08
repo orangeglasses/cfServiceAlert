@@ -34,11 +34,13 @@ func main() {
 	}
 
 	as := &alertServer{
-		cfClient:   cfClient,
-		promClient: promClient,
-		appGuid:    appEnv.AppID,
-		node:       strconv.Itoa(appEnv.Index),
-		alertRules: rules,
+		cfClient:                  cfClient,
+		promClient:                promClient,
+		appGuid:                   appEnv.AppID,
+		node:                      strconv.Itoa(appEnv.Index),
+		alertRules:                rules,
+		environment:               config.Environment,
+		notificationSerivceClient: *NewNotificationServiceClient(config.NotificationServiceUrl, config.NotificationServiceUser, config.NotificaitonServicePassword),
 	}
 
 	as.Start(int64(config.CheckInterval))

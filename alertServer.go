@@ -14,12 +14,14 @@ import (
 )
 
 type alertServer struct {
-	cfClient   *cfclient.Client
-	promClient *PrometheusClient
-	appGuid    string
-	node       string
-	nodes      int
-	alertRules alertRules
+	cfClient                  *cfclient.Client
+	promClient                *PrometheusClient
+	appGuid                   string
+	node                      string
+	nodes                     int
+	alertRules                alertRules
+	environment               string
+	notificationSerivceClient NotificationServiceClient
 }
 
 func (a *alertServer) Start(checkInterval int64) {
@@ -45,31 +47,34 @@ func (a *alertServer) scanServices() {
 	}
 
 	serviceInstances, _ := a.cfClient.ListV3ServiceInstances()
-	log.Printf("Processing %v instances\n", len(serviceInstances))
+	var filteredServiceInstances []cfclient.V3ServiceInstance
 
 	for _, serviceInstance := range serviceInstances {
 		n, _ := ring.Locate(serviceInstance.Guid)
 		if n == a.node {
-			//log.Println("processing servive guid: ", serviceInstance.Guid)
+			filteredServiceInstances = append(filteredServiceInstances, serviceInstance)
+		}
+	}
 
-			if serviceInstance.Relationships["service_plan"].Data.GUID == "" {
-				//this is probably a CUPS, skip it.
-				continue
-			}
+	log.Printf("Processing %v instances\n", len(filteredServiceInstances))
+	for _, serviceInstance := range filteredServiceInstances {
+		if serviceInstance.Relationships["service_plan"].Data.GUID == "" {
+			//this is probably a CUPS, skip it.
+			continue
+		}
 
-			servicePlan, err := a.cfClient.GetServicePlanByGUID(serviceInstance.Relationships["service_plan"].Data.GUID)
-			if err != nil {
-				continue
-			}
-			service, err := a.cfClient.GetServiceByGuid(servicePlan.ServiceGuid)
-			if err != nil {
-				log.Println("Error getting Service: ", err)
-			}
+		servicePlan, err := a.cfClient.GetServicePlanByGUID(serviceInstance.Relationships["service_plan"].Data.GUID)
+		if err != nil {
+			continue
+		}
+		service, err := a.cfClient.GetServiceByGuid(servicePlan.ServiceGuid)
+		if err != nil {
+			log.Println("Error getting Service: ", err)
+		}
 
-			if ruleSet, ok := a.alertRules[service.Label]; ok {
-				log.Printf("Checking %v service with guid: %v\n", service.Label, serviceInstance.Guid)
-				ruleSet.Process(a, serviceInstance)
-			}
+		if ruleSet, ok := a.alertRules[service.Label]; ok {
+			log.Printf("Checking %v service with guid: %v\n", service.Label, serviceInstance.Guid)
+			ruleSet.Process(a, serviceInstance)
 		}
 	}
 }

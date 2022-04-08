@@ -1,0 +1,24 @@
+---
+applications:
+- name: cfServiceAlert
+  env:
+    CF_USER: admin
+    CF_PASSWORD: N55tr132xF8uH91uaxV4COkL0blV7k
+    GRAFANA_API_KEY: eyJrIjoiQ2hxd1N2YVhpS0NvTERBcTRPSEdCUWNJYUhZNUZpa3MiLCJuIjoiU2VydmljZUFsZXJ0IiwiaWQiOjF9
+    PROMETHEUS_URL: http://grafana.sys.cf.automate-it.lab/api/datasources/proxy/6/
+    ENVIRONMENT_NAME: ota
+    NOTIFICATION_URL: https://cfnotificationservice.apps.cf.automate-it.lab
+    NOTIFICATION_USER: testuser
+    NOTIFICATION_PASSWORD: testpassword
+  buildpacks:
+  - go_buildpack
+  stack: cflinuxfs3
+  routes:
+  - route: cfServiceAlert.apps.cf.automate-it.lab
+    protocol: http1
+  processes:
+  - type: web
+    instances: 3
+    memory: 1024M
+    disk_quota: 1024M
+    health-check-type: port

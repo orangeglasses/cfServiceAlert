@@ -19,8 +19,14 @@ func main() {
 
 	c := &cfclient.Config{
 		ApiAddress: appEnv.CFAPI,
-		Username:   config.CFUser,
-		Password:   config.CFPassword,
+	}
+
+	if config.CFUser != "" {
+		c.Username = config.CFUser
+		c.Password = config.CFPassword
+	} else {
+		c.ClientID = config.CFClient
+		c.ClientSecret = config.CFSecret
 	}
 
 	cfClient, err := cfclient.NewClient(c)

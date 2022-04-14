@@ -41,7 +41,7 @@ func (a *alertServer) scanServices() {
 	app, _ := a.cfClient.GetAppByGuid(a.appGuid)
 	a.nodes = app.Instances
 
-	ring := hashring.New(3, nil)
+	ring := hashring.New(6, nil)
 	for i := a.nodes; i > 0; i-- {
 		ring.Add(fmt.Sprintf("%v", i-1))
 	}

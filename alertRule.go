@@ -87,6 +87,8 @@ func (rule *alertRule) GenerateMessageForSpace(client cfclient.Client, serviceIn
 		return NotificationMessage{}, err
 	}
 
+	floatMetricValue, _ := strconv.ParseFloat(sampleValue.String())
+
 	templData := struct {
 		AlertName       string
 		InstanceId      string
@@ -95,7 +97,7 @@ func (rule *alertRule) GenerateMessageForSpace(client cfclient.Client, serviceIn
 		SpaceName       string
 		OrgName         string
 		Treshold        string
-		MetricValue     model.SampleValue
+		MetricValue     string
 	}{
 		AlertName:       rule.Name,
 		InstanceId:      serviceInstance.Guid,
@@ -104,7 +106,7 @@ func (rule *alertRule) GenerateMessageForSpace(client cfclient.Client, serviceIn
 		SpaceName:       space.Name,
 		OrgName:         org.Name,
 		Treshold:        rule.Treshold,
-		MetricValue:     sampleValue,
+		MetricValue:     fmt.Sprintf("%.2f", floatMetricValue),
 	}
 
 	log.Printf("Generating notification for service %s in space: %s(%s)\n", serviceInstance.Name, space.Name, space.Guid)

@@ -87,7 +87,7 @@ func (rule *alertRule) GenerateMessageForSpace(client cfclient.Client, serviceIn
 		return NotificationMessage{}, err
 	}
 
-	floatMetricValue, _ := strconv.ParseFloat(sampleValue.String())
+	floatMetricValue, _ := strconv.ParseFloat(sampleValue.String(), 32)
 
 	templData := struct {
 		AlertName       string

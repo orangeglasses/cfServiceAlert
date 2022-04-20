@@ -17,4 +17,5 @@ applications:
   memory: 32M
   disk_quota: 32M
   health-check-type: process
+  no-route: true
   

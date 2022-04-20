@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"log"
-	"net/http"
 	"text/template"
 	"time"
 
@@ -31,10 +30,6 @@ func (a *alertServer) Start(checkInterval int64) {
 			a.scanServices()
 		}
 	}()
-}
-
-func (a *alertServer) statusHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "I am Node %v of %v", a.node, a.nodes)
 }
 
 func (a *alertServer) scanServices() {

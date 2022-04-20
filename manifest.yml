@@ -13,12 +13,10 @@ applications:
   buildpacks:
   - go_buildpack
   stack: cflinuxfs3
-  routes:
-  - route: ((route))
-    protocol: http1
   processes:
-  - type: web
+  - type: worker
     instances: 3
     memory: 32M
     disk_quota: 32M
-    health-check-type: port
+    health-check-type: process
+  

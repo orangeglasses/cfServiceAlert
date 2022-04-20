@@ -20,7 +20,7 @@ type alertServerConfig struct {
 	Environment                 string `envconfig:"environment_name" required:"true"`
 	NotificationServiceUrl      string `envconfig:"notification_url" required:"true"`
 	NotificationServiceUser     string `envconfig:"notification_user" required:"true"`
-	NotificaitonServicePassword string `envconfig:"notification_password" required:"true"`
+	NotificationServicePassword string `envconfig:"notification_password" required:"true"`
 }
 
 func alertServerConfigLoad() (alertServerConfig, alertRules, error) {

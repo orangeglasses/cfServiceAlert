@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"net/http"
+	"os"
+	"os/signal"
 	"strconv"
 
 	"github.com/cloudfoundry-community/go-cfclient"
@@ -46,11 +46,14 @@ func main() {
 		node:                      strconv.Itoa(appEnv.Index),
 		alertRules:                rules,
 		environment:               config.Environment,
-		notificationSerivceClient: *NewNotificationServiceClient(config.NotificationServiceUrl, config.NotificationServiceUser, config.NotificaitonServicePassword),
+		notificationSerivceClient: *NewNotificationServiceClient(config.NotificationServiceUrl, config.NotificationServiceUser, config.NotificationServicePassword),
 	}
 
 	as.Start(int64(config.CheckInterval))
 
-	http.HandleFunc("/status", as.statusHandler)
-	http.ListenAndServe(fmt.Sprintf(":%v", appEnv.Port), nil)
+	signals := make(chan os.Signal, 2)
+	signal.Notify(signals, os.Interrupt)
+	signal.Notify(signals, os.Kill)
+
+	<-signals
 }

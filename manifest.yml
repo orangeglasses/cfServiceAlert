@@ -14,7 +14,7 @@ applications:
   - go_buildpack
   stack: cflinuxfs3
   processes:
-  - type: worker
+  - type: web
     instances: 3
     memory: 32M
     disk_quota: 32M

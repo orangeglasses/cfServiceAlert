@@ -1,7 +1,7 @@
 ---
 applications:
 - name: cfServiceAlert
-  env:
+#  env:
 #    CF_USER: admin
 #    CF_PASSWORD: N55tr132xF8uH91uaxV4COkL0blV7k
 #    GRAFANA_API_KEY: eyJrIjoiQ2hxd1N2YVhpS0NvTERBcTRPSEdCUWNJYUhZNUZpa3MiLCJuIjoiU2VydmljZUFsZXJ0IiwiaWQiOjF9

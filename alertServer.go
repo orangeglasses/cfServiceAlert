@@ -41,7 +41,11 @@ func (a *alertServer) scanServices() {
 		ring.Add(fmt.Sprintf("%v", i-1))
 	}
 
-	serviceInstances, _ := a.cfClient.ListV3ServiceInstances()
+	serviceInstances, err := a.cfClient.ListV3ServiceInstances()
+	if err != nil {
+		log.Printf("Unable to scan services: %s\n", err)
+		return
+	}
 	var filteredServiceInstances []cfclient.V3ServiceInstance
 
 	for _, serviceInstance := range serviceInstances {

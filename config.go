@@ -9,8 +9,8 @@ import (
 )
 
 type alertServerConfig struct {
-	CFUser                      string `envconfig:"cf_user" required:"true"`
-	CFPassword                  string `envconfig:"cf_password" required:"true"`
+	CFUser                      string `envconfig:"cf_user"`
+	CFPassword                  string `envconfig:"cf_password"`
 	CFClient                    string `envconfig:"cf_client"`
 	CFSecret                    string `envconfig:"cf_secret"`
 	RulesPath                   string `envconfig:"rules_path" default:"rules.json"`

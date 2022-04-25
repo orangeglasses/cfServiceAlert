@@ -13,7 +13,7 @@ applications:
   buildpacks:
   - go_buildpack
   stack: cflinuxfs3
-  instances: 3
+  instances: ((instances))
   memory: 32M
   disk_quota: 32M
   health-check-type: process

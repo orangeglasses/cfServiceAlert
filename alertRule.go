@@ -48,8 +48,10 @@ func (rs alertRuleSet) Process(a *alertServer, serviceInstance cfclient.V3Servic
 
 				err = a.notificationSerivceClient.Send(msg)
 				if err != nil {
-					log.Println("Error sending notificaiton: ", err)
+					log.Println("Notification not sent: ", err)
 				}
+
+				break //Instances might exist of multiple VMs / containers and return multiple metrics which exceed the treshold. We only have to alert once so we break the loop after one alert is generated.
 			}
 		}
 	}
